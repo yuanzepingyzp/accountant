@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+        <link href="normalize.css" rel="stylesheet">
+        <link href="style.css" rel="stylesheet">
+        <script src="angular.min.js"></script>
+        <script src="echarts.js"></script>
+      <script src="action.js"></script>
+</head>
+    <body  ng-app="myapp" ng-controller="myctrl">
+         <nav>
+              <ul>
+                <li ng-click="changeClass1()" ng-class="state1">账单</li>
+                <li ng-click="changeClass2()" ng-class="state2">订单&nbsp;<span ng-bind="(records|filter:{category:'order'}).length"></span></li>  
+                <li ng-click="changeClass3()" ng-class="state3">销售</li>
+                <li ng-click="changeClass4()" ng-class="state4">债务</li>
+                <li ng-click="changeClass5()" ng-class="state5">客户</li>
+                   <li ng-click="changeClass6();updateChart();updatePie()" ng-class="state6">报表</li>
+                </ul>
+         </nav>
+<!--        搜索框-->
+         <section class="search" ng-show="!state6">
+                <input placeholder="搜索" ng-model="key" > 
+                <img src="clear.png" ng-click="key=''">
+              
+         </section>
+<!--        客户datalist-->
+        <datalist id="customer">
+                  <option ng-repeat="x in records|uniquec">{{x.customer}}</option>
+        </datalist>
+<!--        产品列表-->
+         <datalist id="product">
+                  <option ng-repeat="x in records|uniquep">{{x.name}}</option>
+        </datalist>
+<!--        总记录-->
+         
+         <img src="add.png" ng-click="addSellRecords()" ng-show="state1"></img>
+         <section class="showData" ng-show="state1">
+              <!-- sell records-->
+             <div ng-repeat="x in records|filter:key">
+                 <table on-long-press="x.editable=!{true:'true',false:'true'}[x.editable]">
+                     <tr><td>分类</td><td><div>订单:<input type="radio" [name="category"] value="order" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]">销售:<input type="radio" [name="category"] value="sell" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]">订购:<input type="radio" [name="category"] value="purchase" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]">购买:<input type="radio" [name="category"] value="buy" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]">
+                     </div></td> 
+                     </tr>
+                     <tr>
+                      <td >交易日期</td><td><input type="date" ng-model="x.time" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td> 
+   			</tr>
+                     <tr><td>客户信息</td><td><input list="customer" type="text" ng-model="x.customer" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                     <tr><td>产品名称</td><td><input list="product" type="text" ng-model="x.name" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+			<tr>
+                      <td>价格</td><td class="data"><input type="number" ng-model="x.price" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+			</tr>
+			<tr>
+                      <td>数量</td><td class="data"><input type="number" ng-model="x.number" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+			</tr>
+                     <tr>
+                      <td>收入金额（元）</td><td class="data"><input type="number" ng-model="x.income" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+                     </tr>
+                    <tr><td>支出金额（元）</td><td class="data"><input type="number" ng-model="x.outcome" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                 </table>
+                 <div ng-show="!x.editable"><img src="edit.png" ng-click="x.editable=!x.editable">
+                     </img><img src="remove.png" ng-click="records.splice(x.indexOf(),1)"></img><img src="apply.png"></img></div>
+             </div>
+         </section>  
+
+<!--订单记录-->
+              <section class="showData" ng-show="state2">
+              <!-- sell records-->
+             <div ng-repeat="x in records|filter:{category:'order'}">
+                 <table on-long-press="x.editable=!{true:'true',false:'true'}[x.editable]">
+                     <tr><td>分类</td><td><div>订单:<input type="radio" [name="category"] value="order" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]">销售:<input type="radio" [name="category"] value="sell" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"> 取消:<input type="radio" [name="category"] value="cancel" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></div></td></tr>
+                    <tr>
+                      <td >交易日期</td><td><input type="date" ng-model="x.time" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td> 
+   			</tr>
+                     <tr><td>客户信息</td><td><input type="text" ng-model="x.customer" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                     <tr><td>产品名称</td><td><input type="text" ng-model="x.name" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+			<tr>
+                      <td>价格</td><td class="data"><input type="number" ng-model="x.price" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+			</tr>
+			<tr>
+                      <td>数量</td><td class="data"><input type="number" ng-model="x.number" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+			</tr>
+                     <tr>
+                      <td>收入金额（元）</td><td class="data"><input type="number" ng-model="x.income" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+                     </tr>
+                    <tr><td>支出金额（元）</td><td class="data"><input type="number" ng-model="x.outcome" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                 </table>
+                 <div ng-show="!x.editable"><img src="edit.png" ng-click="x.editable=!x.editable">
+                     </img></div>
+             </div>
+         </section>  
+<!--销售记录-->
+    <section class="showData" ng-show="state3">
+              <!-- sell records-->
+             <div ng-repeat="x in records|filter:{category:'sell'}|filter:key">
+                 <table on-long-press="x.editable=!{true:'true',false:'true'}[x.editable]">
+                     <tr><td>分类</td><td><div>销售:<input type="radio" [name="category"] value="sell" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"> 退货:<input type="radio" [name="category"] value="return" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></div></td></tr>
+                     <tr>
+                      <td >交易日期</td><td><input type="date" ng-model="x.time" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td> 
+   			</tr>
+                     <tr><td>客户信息</td><td><input type="text" ng-model="x.customer" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                     <tr><td>产品名称</td><td><input type="text" ng-model="x.name" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+			<tr>
+                      <td>价格</td><td class="data"><input type="number" ng-model="x.price" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+			</tr>
+			<tr>
+                      <td>数量</td><td class="data"><input type="number" ng-model="x.number" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+			</tr>
+                     <tr>
+                      <td>收入金额（元）</td><td class="data"><input type="number" ng-model="x.income" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+                     </tr>
+                    <tr><td>支出金额（元）</td><td class="data"><input type="number" ng-model="x.outcome" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                     <tr><td>结余（元）</td><td class="data"><input type="number" ng-bind="x.income-x.outcome" disabled="disabled" class="uneditable"></td></tr>
+                 </table>
+                 <div ng-show="!x.editable"><img src="edit.png" ng-click="x.editable=!x.editable">
+                     </img></div>
+             </div>
+         </section>  
+<!--债务-->
+     <section class="showData" ng-show="state4">
+              <!-- sell records-->
+             <div ng-repeat="x in records|debt|filter:key">
+                 <table on-long-press="x.editable=!{true:'true',false:'true'}[x.editable]">
+                     <tr><td>分类</td><td><div>订单:<input type="radio" [name="category"] value="order" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]">销售:<input type="radio" [name="category"] value="sell" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]">订购:<input type="radio" [name="category"] value="purchase" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]">购买:<input type="radio" [name="category"] value="buy" ng-model="x.category" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></div></td></tr>
+                    <tr>
+                      <td >交易日期</td><td><input type="date" ng-model="x.time" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td> 
+   			</tr>
+                     <tr><td>客户信息</td><td><input type="text" ng-model="x.customer" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                     <tr><td>产品名称</td><td><input type="text" ng-model="x.name" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+			<tr>
+                      <td>价格</td><td class="data"><input type="number" ng-model="x.price" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+			</tr>
+			<tr>
+                      <td>数量</td><td class="data"><input type="number" ng-model="x.number" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+			</tr>
+                     <tr>
+                      <td>收入金额（元）</td><td class="data"><input type="number" ng-model="x.income" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+                     </tr>
+                    <tr><td>支出金额（元）</td><td class="data"><input type="number" ng-model="x.outcome" type="number" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                     <tr ng-show="x.category==='sell'">
+                      <td>应收款项（元）</td><td class="data"><input type="number" ng-model="{true:x.price*x.number-x.income,false:0}[x.category=='sell']" type="number" disabled="disabled" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+                      </tr>
+                     <tr ng-show="x.category==='order'">
+                      <td>预收款项（元）</td><td class="data"><input type="number" ng-model="{true:x.income,false:0}[x.category=='order']" type="number" disabled="disabled" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+                      </tr>
+                     <tr ng-show="x.category==='buy'">
+                      <td>应付款项（元）</td><td class="data"><input type="number" ng-model="{true:x.price*x.number-x.outcome,false:0}[x.category=='buy']" type="number" disabled="disabled" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+                      </tr>
+                     <tr ng-show="x.category==='purchase'">
+                      <td>预付款项（元）</td><td class="data"><input type="number" ng-model="{true:x.outcome,false:0}[x.category=='purchase']" type="number" disabled="disabled" ng-class="{true:'uneditable',false:''}[x.editable]"></td>
+                      </tr>
+                 </table>
+                 <div ng-show="!x.editable"><img src="edit.png" ng-click="x.editable=!x.editable">
+                     </img></div>
+             </div>
+         </section>  
+<!--客户信息-->
+ <section class="showData" ng-show="state5">
+              <!-- sell records-->
+             <div ng-repeat="x in records|customerList|filter:key">
+                 <table on-long-press="x.editable=!{true:'true',false:'true'}[x.editable]">
+                     <tr><td>客户信息</td><td><input type="text" ng-model="x.customer" disabled="disabled" class="uneditable"></td></tr>
+                     <tr><td>联系方式</td><td><input type="text" ng-model="x.phone" ng-disabled="x.editable" ng-class="{true:'uneditable',false:''}[x.editable]"></td></tr>
+                 </table>
+                 <div ng-show="!x.editable" ><img src="edit.png" ng-click="x.editable=!x.editable">
+                     </img></div>
+             </div>
+         </section> 
+<!--报表-->
+<section class="tables" ng-show="state6">
+             <img src="table.png" ng-class="selectedclass1" ng-click="selectedclass1='selected';selectedclass2='';selectedclass3=''">
+             <img src="bar.png" ng-class="selectedclass2" ng-click="selectedclass1='';selectedclass2='selected';selectedclass3=''">
+             <img src="pie.png" ng-class="selectedclass3" ng-click="selectedclass1='';selectedclass2='';selectedclass3='selected'">
+            <img src="printer.png" ng-click="printpage()">
+            <div ng-show="selectedclass1">
+                 <table> 
+                         <tr><th colspan="5">销售报表</th></tr>
+                     <tr><th colspan="5"><input type="month" ng-model="selldate"></th></tr>
+                         <tr><td>日期</td><td>产品</td><td>单价(元)</td><td>数量</td><td>总计(元)</td></tr>
+                         <tr ng-repeat="x in records|filter:{category:'sell'}|filter:{time:(selldate|date:('yyyy-MM'))}"><td ng-bind="x.time|date:('yyyy-MM-dd')"></td><td ng-bind="x.name"></td><td ng-bind="x.price"></td><td ng-bind="x.number"></td><td ng-bind="x.price*x.number"></td></tr>
+                 </table>
+           </div>
+           <div  ng-show="selectedclass2">
+               <button ng-click="year=year-1;updateChart();updatePie()">-</button><input type="number" ng-model="year"><button ng-click="year=year+1;updateChart();updatePie()">+</button>
+               <bar id="main" legend="legend" item="item" data="data"></bar> 
+           </div>
+           <div ng-show="selectedclass3">
+               <button ng-click="year=year-1;updateChart();updatePie()">-</button><input type="number" ng-model="year"><button ng-click="year=year+1;updateChart();updatePie()">+</button>
+               <pie id="pie" pielegend="pielegend" piedata="piedata"></pie> 
+          </div>
+</section>
+</body>
+</html>
